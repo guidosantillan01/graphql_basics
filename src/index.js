@@ -44,11 +44,31 @@ const posts = [
   }
 ];
 
+const comments = [
+  {
+    id: 'c1',
+    text: 'Nice info'
+  },
+  {
+    id: 'c2',
+    text: 'Cool bro!'
+  },
+  {
+    id: 'c3',
+    text: 'Thank you. I will check it out.'
+  },
+  {
+    id: 'c4',
+    text: 'I hate you'
+  }
+];
+
 // Type definitions (Application Schema. Describes the operations and data structures)
 const typeDefs = `
   type Query {
     users(query: String): [User!]!
     posts(query: String): [Post!]!
+    comments: [Comment!]!
     me: User!
     post: Post!
   }
@@ -67,6 +87,11 @@ const typeDefs = `
     body: String!
     published: Boolean!
     author: User!
+  }
+  
+  type Comment {
+    id: ID!
+    text: String!
   }
 `;
 
@@ -96,6 +121,9 @@ const resolvers = {
           .includes(args.query.toLowerCase());
         return isTitleMatch || isBodyMatch;
       });
+    },
+    comments(parent, args, ctx, info) {
+      return comments;
     },
     me() {
       return {
