@@ -25,19 +25,22 @@ const posts = [
     id: '1',
     title: 'ABC title',
     body: 'XYZ title',
-    published: true
+    published: true,
+    author: '1'
   },
   {
     id: '2',
     title: 'TTT title',
     body: 'BBB body',
-    published: false
+    published: false,
+    author: '1'
   },
   {
     id: '3',
     title: '111 title',
     body: '222 body',
-    published: true
+    published: true,
+    author: '2'
   }
 ];
 
@@ -62,6 +65,7 @@ const typeDefs = `
     title: String!
     body: String!
     published: Boolean!
+    author: User!
   }
 `;
 
@@ -108,6 +112,13 @@ const resolvers = {
         body: 'This is the body of the post',
         published: true
       };
+    }
+  },
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find(user => {
+        return user.id === parent.author;
+      });
     }
   }
 };
