@@ -22,21 +22,21 @@ const users = [
 
 const posts = [
   {
-    id: '1',
+    id: 'b1',
     title: 'ABC title',
     body: 'XYZ title',
     published: true,
     author: '1'
   },
   {
-    id: '2',
+    id: 'b2',
     title: 'TTT title',
     body: 'BBB body',
     published: false,
     author: '1'
   },
   {
-    id: '3',
+    id: 'b3',
     title: '111 title',
     body: '222 body',
     published: true,
@@ -47,19 +47,23 @@ const posts = [
 const comments = [
   {
     id: 'c1',
-    text: 'Nice info'
+    text: 'Nice info',
+    author: '1'
   },
   {
     id: 'c2',
-    text: 'Cool bro!'
+    text: 'Cool bro!',
+    author: '1'
   },
   {
     id: 'c3',
-    text: 'Thank you. I will check it out.'
+    text: 'Thank you. I will check it out.',
+    author: '2'
   },
   {
     id: 'c4',
-    text: 'I hate you'
+    text: 'I hate you',
+    author: '3'
   }
 ];
 
@@ -79,6 +83,7 @@ const typeDefs = `
     email: String!
     age: Int
     posts: [Post!]!
+    comments: [Comment!]!
   }
 
   type Post {
@@ -92,6 +97,7 @@ const typeDefs = `
   type Comment {
     id: ID!
     text: String!
+    author: User!
   }
 `;
 
@@ -154,6 +160,18 @@ const resolvers = {
     posts(parent, args, ctx, info) {
       return posts.filter(post => {
         return post.author === parent.id;
+      });
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter(comment => {
+        return comment.author === parent.id;
+      });
+    }
+  },
+  Comment: {
+    author(parent, args, ctx, info) {
+      return users.find(user => {
+        return user.id === parent.author;
       });
     }
   }
