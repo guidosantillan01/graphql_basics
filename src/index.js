@@ -22,21 +22,21 @@ const users = [
 
 const posts = [
   {
-    id: 'b1',
+    id: 'p1',
     title: 'ABC title',
     body: 'XYZ title',
     published: true,
     author: '1'
   },
   {
-    id: 'b2',
+    id: 'p2',
     title: 'TTT title',
     body: 'BBB body',
     published: false,
     author: '1'
   },
   {
-    id: 'b3',
+    id: 'p3',
     title: '111 title',
     body: '222 body',
     published: true,
@@ -48,22 +48,26 @@ const comments = [
   {
     id: 'c1',
     text: 'Nice info',
-    author: '1'
+    author: '1',
+    post: 'p1'
   },
   {
     id: 'c2',
     text: 'Cool bro!',
-    author: '1'
+    author: '1',
+    post: 'p2'
   },
   {
     id: 'c3',
     text: 'Thank you. I will check it out.',
-    author: '2'
+    author: '2',
+    post: 'p2'
   },
   {
     id: 'c4',
     text: 'I hate you',
-    author: '3'
+    author: '3',
+    post: 'p3'
   }
 ];
 
@@ -92,12 +96,14 @@ const typeDefs = `
     body: String!
     published: Boolean!
     author: User!
+    comments: [Comment!]!
   }
   
   type Comment {
     id: ID!
     text: String!
     author: User!
+    post: Post!
   }
 `;
 
@@ -152,7 +158,12 @@ const resolvers = {
   Post: {
     author(parent, args, ctx, info) {
       return users.find(user => {
-        return user.id === parent.author;
+        return user.id === parent.author; // The parent is the Post
+      });
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter(comment => {
+        return comment.post === parent.id;
       });
     }
   },
@@ -172,6 +183,11 @@ const resolvers = {
     author(parent, args, ctx, info) {
       return users.find(user => {
         return user.id === parent.author;
+      });
+    },
+    post(parent, args, ctx, info) {
+      return posts.find(post => {
+        return post.id === parent.post;
       });
     }
   }
