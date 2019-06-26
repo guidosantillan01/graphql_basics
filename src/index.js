@@ -1,11 +1,51 @@
 import { GraphQLServer } from 'graphql-yoga';
 
+// Demo user data
+const users = [
+  {
+    id: '1',
+    name: 'Andrew',
+    email: 'andrew@example.com',
+    age: 27
+  },
+  {
+    id: '2',
+    name: 'Sarah',
+    email: 'sarah@example.com'
+  },
+  {
+    id: '3',
+    name: 'Mike',
+    email: 'mike@example.com'
+  }
+];
+
+const posts = [
+  {
+    id: '1',
+    title: 'ABC title',
+    body: 'XYZ title',
+    published: true
+  },
+  {
+    id: '2',
+    title: 'TTT title',
+    body: 'BBB body',
+    published: false
+  },
+  {
+    id: '3',
+    title: '111 title',
+    body: '222 body',
+    published: true
+  }
+];
+
 // Type definitions (Application Schema. Describes the operations and data structures)
 const typeDefs = `
   type Query {
-    greeting(name: String, position: String): String!
-    add(numbers: [Float!]!): Float!
-    grades: [Int]!
+    users(query: String): [User!]!
+    posts(query: String): [Post!]!
     me: User!
     post: Post!
   }
@@ -28,25 +68,29 @@ const typeDefs = `
 // Resolvers (Functions that run when operations are performed)
 const resolvers = {
   Query: {
-    greeting(parent, args, ctx, info) {
-      // args is where data lives
-      if (args.name && args.position) {
-        return `Hello, ${args.name}. You are my favorite ${args.position}`;
-      } else {
-        return 'Hello';
-      }
-    },
-    add(parent, args, ctx, info) {
-      if (args.numbers.length === 0) {
-        return 0;
+    users(parent, args, ctx, info) {
+      if (!args.query) {
+        return users;
       }
 
-      return args.numbers.reduce((accumulator, currentValue) => {
-        return accumulator + currentValue;
+      return users.filter(user => {
+        return user.name.toLowerCase().includes(args.query.toLowerCase());
       });
     },
-    grades(parent, args, ctx, info) {
-      return [99, 80, 93];
+    posts(parent, args, ctx, info) {
+      if (!args.query) {
+        return posts;
+      }
+
+      return posts.filter(post => {
+        const isTitleMatch = post.title
+          .toLowerCase()
+          .includes(args.query.toLowerCase());
+        const isBodyMatch = post.body
+          .toLowerCase()
+          .includes(args.query.toLowerCase());
+        return isTitleMatch || isBodyMatch;
+      });
     },
     me() {
       return {
