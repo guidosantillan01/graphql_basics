@@ -164,7 +164,6 @@ const resolvers = {
   },
   Mutation: {
     createUser(parent, args, ctx, info) {
-      const { name, email, age } = args;
       const emailTaken = users.some(user => user.email === args.email);
 
       if (emailTaken) {
@@ -173,9 +172,7 @@ const resolvers = {
 
       const user = {
         id: uuidv4(),
-        name,
-        email,
-        age
+        ...args
       };
 
       users.push(user);
@@ -183,8 +180,6 @@ const resolvers = {
       return user;
     },
     createPost(parent, args, ctx, info) {
-      const { title, body, published, author } = args;
-
       const userExists = users.some(user => user.id === author);
 
       if (!userExists) {
@@ -193,10 +188,7 @@ const resolvers = {
 
       const post = {
         id: uuidv4(),
-        title,
-        body,
-        published,
-        author
+        ...args
       };
 
       posts.push(post);
@@ -204,20 +196,21 @@ const resolvers = {
       return post;
     },
     createComment(parent, args, ctx, info) {
-      const { text, author, post } = args;
-
       const userExists = users.some(user => user.id === author);
+      const postExists = users.some(
+        post => post.id === args.post && post.published
+      );
 
-      if (!userExists) {
-        throw new Error('User not found');
+      if (!userExists || !postExists) {
+        throw new Error('Unable to find user and post');
       }
 
       const comment = {
         id: uuidv4(),
-        text,
-        author,
-        post
+        ...args
       };
+
+      comments.push(comment);
 
       return comment;
     }
