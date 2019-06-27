@@ -21,7 +21,7 @@ type Mutation {
 }
 
 type Subscription {
-  comment(postId: ID!): Comment!
+  comment(postId: ID!): CommentSubscriptionPayload!
   post: PostSubscriptionPayload!
 }
 
@@ -92,4 +92,10 @@ type Comment {
 type PostSubscriptionPayload {
   mutation: String!
   data: Post!
+}
+
+# 1. Set up a custom payload type for comment subscription with "mutation" and "data
+type CommentSubscriptionPayload {
+  mutation: String!
+  data: Comment!
 }
