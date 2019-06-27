@@ -81,31 +81,45 @@ const Mutation = {
 
     db.posts.push(post);
 
-    // 3. Modify the mutation for creating a post to publish the new post data. Only call pubsub.publish if the post had "published" set to true.
     if (args.data.published) {
-      pubsub.publish(`post`, { post });
+      pubsub.publish(`post`, {
+        // It needs both values, mutation and data. Check PostSubscriptionPayload in schema
+        post: {
+          mutation: 'CREATED',
+          data: post
+        }
+      });
     }
 
     return post;
   },
-  deletePost(parent, args, { db }, info) {
+  deletePost(parent, args, { db, pubsub }, info) {
     const postIndex = db.posts.findIndex(post => post.id === args.id);
 
     if (postIndex === -1) {
       throw new Error('Post not found');
     }
 
-    const deletedPosts = db.posts.splice(postIndex, 1);
+    const [deletedPost] = db.posts.splice(postIndex, 1);
 
     // Delete comments from deleted posts
     db.comments = db.comments.filter(comment => comment.post !== args.id);
 
-    return deletedPosts[0]; // Return the first and only item from the array
-  },
-  updatePost(parent, args, { db }, info) {
-    const { id, data } = args;
+    if (deletedPost.published) {
+      pubsub.publish('post', {
+        post: {
+          mutation: 'DELETED',
+          data: deletedPost
+        }
+      });
+    }
 
+    return deletedPost; // Return the first and only item from the array
+  },
+  updatePost(parent, args, { db, pubsub }, info) {
+    const { id, data } = args;
     const post = db.posts.find(post => post.id === id);
+    const originalPost = { ...post };
 
     if (!post) {
       throw new Error('Post not found');
@@ -121,6 +135,32 @@ const Mutation = {
 
     if (typeof data.published === 'boolean') {
       post.published = data.published;
+
+      if (originalPost.published && !post.published) {
+        // Post is beind DELETED. Unpushished from published
+        pubsub.publish('post', {
+          post: {
+            mutation: 'DELETED',
+            data: originalPost
+          }
+        });
+      } else if (!originalPost.published && post.published) {
+        // Post is being CREATED. Published from unpublished
+        pubsub.publish('post', {
+          post: {
+            mutation: 'CREATED',
+            data: post
+          }
+        });
+      }
+    } else if (post.published) {
+      // Post is being UPDATED.
+      pubsub.publish('post', {
+        post: {
+          mutation: 'UPDATED',
+          data: post
+        }
+      });
     }
 
     return post;
