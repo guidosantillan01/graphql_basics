@@ -1,5 +1,7 @@
 import uuidv4 from 'uuid';
 
+// Enums
+
 const Mutation = {
   createUser(parent, args, { db }, info) {
     const emailTaken = db.users.some(user => user.email === args.data.email);
